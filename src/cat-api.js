@@ -1,39 +1,46 @@
-import axios from "axios";
-const apiKey = "live_q3MIWw2yF59KJEOyinnMMcHRwSmAi24WkIzAz1wn1gUpNT23Kn9lXJyfduJcA2Fu"; // Замініть на свій ключ
-const headers = {
-  "Content-Type": "application/json",
-  "x-api-key": apiKey,
-};
-export function fetchBreeds() {
-  const loader = document.querySelector('.loader');
-  const breedSelect = document.querySelector('.breed-select');
-  loader.classList.add('show');
-  breedSelect.classList.add('hide');
-  return axios.get("https://api.thecatapi.com/v1/breeds", { headers })
-    .then(response => {
-      loader.classList.remove('show');
-      breedSelect.classList.remove('hide');
-      return response.data;
-    })
-    .catch(error => {
-      console.error("Error fetching cat breeds:", error);
-      throw error;
+import axios from 'axios';
+import Notiflix from 'notiflix';
+import SlimSelect from 'slim-select'
+import '/node_modules/slim-select/dist/slimselect.css';
+export async function fetchBreeds(selectEl, loadingEl, errorEl) {
+  try {
+    const response = await axios.get('https://api.thecatapi.com/v1/breeds');
+    loadingEl.style.display = 'none';
+    response.data.forEach(elem => {
+      const optionEl = document.createElement('option');
+      optionEl.value = elem.id;
+      optionEl.textContent = elem.name;
+      selectEl.append(optionEl);
     });
+    new SlimSelect({
+      select: '#selectElement'
+    })
+  } catch (error) {
+    loadingEl.style.display = 'none';
+    selectEl.style.display = 'none';
+    errorEl.style.display = 'block';
+    Notiflix.Notify.failure('Oops! Something went wrong! Try reloading the page!');
+    throw new Error(error);
+  }
 }
-export function fetchCatByBreed(breedId) {
-  const loader = document.querySelector('.loader');
-  const catInfo = document.querySelector('.cat-info');
-  loader.classList.add('show');
-  catInfo.classList.add('hide');
-  const url = `https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}`;
-  return axios.get(url, { headers })
-    .then(response => {
-      loader.classList.remove('show');
-      catInfo.classList.remove('hide');
-      return response.data;
-    })
-    .catch(error => {
-      console.error("Error fetching cat by breed:", error);
-      throw error;
-    });
+export async function fetchCatByBreed(selectedBreedId, loadingEl, selectEl, errorEl) {
+  try {
+    const response = await axios.get(
+      `https://api.thecatapi.com/v1/images/search?breed_ids=${selectedBreedId}`
+    );
+    const item = response.data[0];
+    const breedData = item.breeds[0];
+    return {
+      name: breedData.name,
+      description: breedData.description,
+      temperament: breedData.temperament,
+      imageUrl: item.url,
+    }
+  } catch (error) {
+    loadingEl.style.display = 'none';
+    selectEl.style.display = 'none';
+    errorEl.style.display = 'block'; 
+    Notiflix.Notify.failure('Oops! Something went wrong! Try reloading the page!');
+    throw new Error(error);
+  }
 }
