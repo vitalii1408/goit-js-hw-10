@@ -25,7 +25,7 @@ async function handleSelectChange() {
 }
 function createMarkup({ name, description, temperament, imageUrl }) {
   const markup = `
-    <img class="cat-img" style="object-fit: cover; border-radius: 12px" src="${imageUrl}" alt="${name}" width="500" height="400">
+    <img class="cat-img" style="object-fit: cover; border-radius: 4px" src="${imageUrl}" alt="${name}" width="500" height="400">
     <div class="descr-box" style="width: 800px">
       <h2>${name}</h2>
       <p>${description}</p>
