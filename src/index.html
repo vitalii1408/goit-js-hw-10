@@ -1,16 +1,32 @@
+<!-- Оновлений HTML-код -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Homework 10</title>
-  </head>
-  <body>
-    <select class="breed-select"></select>
-    <p class="loader">Loading data, please wait...</p>
-    <p class="error">Oops! Something went wrong! Try reloading the page!</p>
-    <div class="cat-info"></div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/slim-select@latest/dist/slimselect.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/slim-select@latest/dist/slimselect.css" />
+  <title>Cat Info App</title>
+  <style>
+    /* Опціонально: стилізація для приховання/відображення елементів */
+    .hide {
+      display: none;
+    }
+    .show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="cat-info-display"></div>
+  <h1>Cat Info App</h1>
+  <label for="breed-select">Select Cat Breed:</label>
+  <select id="breed-select" class="breed-select"></select>
+  <button id="search-btn">Search</button>
+  <div id="cat-info" class="cat-info"></div>
+  <p class="loader hide">Loading data, please wait...</p>
+  <p class="error hide">Oops! Something went wrong! Try reloading the page!</p>
 
-    <script src="index.js" type="module"></script>
-  </body>
+  <script src="index.js" type="module"></script>
+</body>
 </html>

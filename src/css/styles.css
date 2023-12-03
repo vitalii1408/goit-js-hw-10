@@ -1,0 +1,9 @@
+/* styles.css */
+.loader {
+    display: none; /* За замовчуванням приховуємо завантажувач */
+  }
+  
+  .show {
+    display: block;
+  }
+  

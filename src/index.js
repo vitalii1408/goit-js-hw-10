@@ -1,100 +1,60 @@
-// index.js
+import axios from "axios";
+import SlimSelect from 'slim-select';
+import { fetchBreeds, fetchCatByBreed } from "./cat-api";
+document.addEventListener("DOMContentLoaded", function () {
+  const slimSelect = new SlimSelect({
+    select: '#breed-select',
+    placeholder: 'Select Cat Breed',
+  });
+  document.getElementById('search-btn').addEventListener('click', function () {
+    const selectedBreeds = slimSelect.selected();
 
-import axios from 'axios';
-import Notiflix from 'notiflix';
-import { fetchBreeds, fetchCatByBreed } from './cat-api';
-
-const apiKey =
-  'live_q3MIWw2yF59KJEOyinnMMcHRwSmAi24WkIzAz1wn1gUpNT23Kn9lXJyfduJcA2Fu';
-const breedSelect = document.querySelector('.breed-select');
-const loader = document.querySelector('.loader');
-const error = document.querySelector('.error');
-const catInfo = document.querySelector('.cat-info');
-
-axios.defaults.headers.common['x-api-key'] = apiKey;
-
-// Функція для обробки стану завантаження
-function toggleLoader(isLoading) {
-  loader.style.display = isLoading ? 'block' : 'none';
-}
-
-// Функція для відображення повідомлення про помилку
-function showError() {
-  error.style.display = 'block';
-}
-
-// Функція для приховування повідомлення про помилку
-function hideError() {
-  error.style.display = 'none';
-}
-
-// Функція для очищення вмісту блоку catInfo
-function clearCatInfo() {
-  catInfo.innerHTML = '';
-}
-
-// Функція для відображення кота та його інформації
-function showCat(cat) {
-  const catImage = document.createElement('img');
-  catImage.src = cat.url;
-  catImage.alt = 'Cat Image';
-
-  const catName = document.createElement('p');
-  catName.textContent = `Breed: ${cat.breeds[0].name}`;
-
-  const catDescription = document.createElement('p');
-  catDescription.textContent = `Description: ${cat.breeds[0].description}`;
-
-  const catTemperament = document.createElement('p');
-  catTemperament.textContent = `Temperament: ${cat.breeds[0].temperament}`;
-
-  catInfo.appendChild(catImage);
-  catInfo.appendChild(catName);
-  catInfo.appendChild(catDescription);
-  catInfo.appendChild(catTemperament);
-}
-
-// Функція для ініціалізації додатку
-async function initializeApp() {
-  try {
-    toggleLoader(true);
-    hideError();
-    clearCatInfo();
-    // Викликаємо функцію fetchBreeds із cat-api.js
-    const breeds = await fetchBreeds();
-    toggleLoader(false);
-
-    breeds.forEach(breed => {
-      const option = document.createElement('option');
-      option.value = breed.id;
-      option.text = breed.name;
-      breedSelect.appendChild(option);
-    });
-  } catch (error) {
-    toggleLoader(false);
-    showError();
+    if (selectedBreeds.length > 0) {
+      const breedId = selectedBreeds[0].value;
+      fetchCatByBreed(breedId);
+    }
+  });
+  function updateBreedsSelect() {
+    fetchBreeds()
+      .then((breeds) => {
+        slimSelect.setData(breeds.map(breed => ({ text: breed.name, value: breed.id })));
+      })
+      .catch((error) => {
+        console.error("Error loading breeds:", error);
+        showError();
+      });
   }
-}
-
-// Викликаємо функцію для ініціалізації додатку при завантаженні сторінки
-initializeApp();
-
-// Додайте подію на зміну вибору породи
-breedSelect.addEventListener('change', async () => {
-  try {
-    toggleLoader(true);
-    hideError();
-    clearCatInfo();
-
-    const selectedBreedId = breedSelect.value;
-    // Викликаємо функцію fetchCatByBreed із cat-api.js
-    const cat = await fetchCatByBreed(selectedBreedId);
-
-    showCat(cat);
-  } catch (error) {
-    toggleLoader(false);
-    showError();
-  } finally {
-    toggleLoader(false);
-  }
+  updateBreedsSelect();
 });
+function fetchCatByBreed(breedId) {
+  const catInfoElement = document.querySelector('.cat-info');
+  const loaderElement = document.querySelector('.loader');
+  loaderElement.classList.add('show');
+  axios.get(`https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}`)
+    .then((response) => {
+      const catInfo = response.data[0];
+      console.log("Fetched Cat Info:", catInfo);
+      if (catInfo && catInfo.url && catInfo.breeds && catInfo.breeds.length > 0) {
+        catInfoElement.innerHTML = `
+          <img src="${catInfo.url}" alt="${catInfo.breeds[0].name || 'Cat Image'}">
+          <p>Breed: ${catInfo.breeds[0].name || 'N/A'}</p>
+          <p>Description: ${catInfo.breeds[0].description || 'N/A'}</p>
+          <p>Temperament: ${catInfo.breeds[0].temperament || 'N/A'}</p>
+        `;
+      } else {
+        console.error("Invalid Cat Info:", catInfo);
+        showError();
+      }
+      loaderElement.classList.remove('show');
+    })
+    .catch((error) => {
+      console.error("Error fetching cat info:", error);
+      showError();
+    });
+}
+function showError() {
+  const errorElement = document.querySelector('.error');
+  const loaderElement = document.querySelector('.loader');
+  errorElement.classList.add('show');
+  loaderElement.classList.remove('show');
+}
