@@ -1,62 +1,58 @@
-// файл index.js 
-import axios from 'axios';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { fetchBreeds, fetchCatByBreed } from './cat-api';
 
-const API_KEY = 'live_s8nipvOVu9x7M1Oib237fV73mUqJ5mMbosZrl0Spq6nATwMKfjepogDKSlr2wzo8';
+const select = document.querySelector('.breed-select');
+const loader = document.querySelector('.loader');
+const catInfo = document.querySelector('.cat-info');
+const body = document.querySelector('body');
 
-axios.defaults.headers.common['x-api-key'] = API_KEY;
+select.style.visibility = 'hidden';
 
-import { fetchBreeds, fetchCatByBreedId } from './cat-api.js';
+fetchBreeds()
+  .then(breeds => {
+    select.style.visibility = 'visible';
+    loader.style.display = 'none';
 
-const selectElement = document.querySelector('.breed-select');
-const loaderElement = document.querySelector('.loader');  
-const errorElement = document.querySelector('.error');
-const catInfoElement = document.querySelector('.cat-info');
+    const cat = breeds
+      .map(breed => `<option value="${breed.id}">${breed.name}</option>`)
+      .join('');
 
-loaderElement.style.display = 'block';
+    select.insertAdjacentHTML('beforeend', cat);
+  })
+  .catch(error => {
+    console.log(error);
+    loader.style.display = 'none';
+    Notify.failure('Oops! Something went wrong! Try reloading the page!');
+  });
 
-fetchBreeds(selectElement, loaderElement, errorElement);
+select.addEventListener('change', function () {
+  catInfo.innerHTML = '';
+  const selectedBreed = this.value;
 
-selectElement.addEventListener('change', handleSelectChange);  
+  loader.style.display = 'block';
 
-async function handleSelectChange() {
+  fetchCatByBreed(selectedBreed)
+    .then(breeds => {
+      loader.style.display = 'none';
+      const catData = breeds[0];
 
-  loaderElement.style.display = 'block';
-
-  try {
-
-    const breedId = selectElement.value;
-    const catData = await fetchCatByBreedId(breedId);
-    
-    renderCat(catData);
-
-  } catch (error) {
-
-    errorElement.style.display = 'block';
-    console.error(error);
-
-  } finally {
-
-    loaderElement.style.display = 'none'; 
-    catInfoElement.style.display = 'flex';
-  
-  }
-
-}
-
-function renderCat(cat) {
-
-  const { name, description, temperament, imageUrl } = cat;
-
-  const markup = `
-    <img src="${imageUrl}" width="500" height="400">
+      catInfo.innerHTML = `
+    <div><img src="${catData.url}" width="400" alt="${catData.breeds[0].name}"></div>
     <div>
-      <h2>${name}</h2>
-      <p>${description}</p>
-      <h4>Temperament:</h4> 
-      <p>${temperament}</p>
+    <h3>${catData.breeds[0].name}</h3>
+    <p>Description: ${catData.breeds[0].description}</p>
+    <p>Temperament: ${catData.breeds[0].temperament}</p>
     </div>
-  `;
+    `;
 
-  catInfo.innerHTML = markup;
+      catInfo.style.display = 'flex';
+      catInfo.style.gap = '30px';
+      catInfo.style.marginTop = '50px';
+      catInfo.style.color = '#d87474'; 
+    })
+    .catch(error => {
+      console.log(error);
+      Notify.failure('Oops! Something went wrong! Try reloading the page!');
+    });
+});
 
-}

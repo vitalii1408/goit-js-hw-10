@@ -1,47 +1,69 @@
-
-.error {
-  display: none;
-  color: rgb(255, 0, 8);
-}
-.breed-select {
-  margin-bottom: 25px;
-}
-.cat-info {
-  display: flex;
-  gap: 60px;
-  padding: 60px;
-  box-shadow: 3px 9px 37px -7px rgba(68,179,29,0.75);
-  -webkit-box-shadow: 3px 9px 37px -7px rgba(68,179,29,0.75);
-  -moz-box-shadow: 3px 9px 37px -7px rgba(68,179,29,0.75);
-}
 .loader {
-    width: 48px;
-    height: 48px;
-    display: inline-block;
-    position: relative;
+  margin: 70px auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  border: 3px solid;
+  border-color: #fff #fff transparent transparent;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+.loader::after,
+.loader::before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border: 3px solid;
+  border-color: transparent transparent #ff3d00 #ff3d00;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  animation: rotationBack 0.5s linear infinite;
+  transform-origin: center center;
+}
+.loader::before {
+  width: 32px;
+  height: 32px;
+  border-color: #fff #fff transparent transparent;
+  animation: rotation 1.5s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
   }
-  .loader::after,
-  .loader::before {
-    content: '';
-    width: 48px;
-    height: 48px;
-    border: 2px solid #FFF;
-    position: absolute;
-    left: 0;
-    top: 0;
-    box-sizing: border-box;
-    animation: rotation 2s ease-in-out infinite;
+  100% {
+    transform: rotate(360deg);
   }
-  .loader::after {
-    border-color: #FF3D00;
-    animation-delay: 1s;
+}
+@keyframes rotationBack {
+  0% {
+    transform: rotate(0deg);
   }
-  
-  @keyframes rotation {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  } 
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+.breed-select {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #d87474;
+  border-radius: 6px;
+  background-color: #72c6a0;
+  cursor: pointer;
+}
+.cat-info { 
+  border-radius: 5px;
+  background-color: #dbccde;
+}
