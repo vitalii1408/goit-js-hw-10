@@ -1,38 +1,62 @@
-import { fetchBreeds, fetchCatByBreed } from './cat-api';
-import { TheCatAPI } from '@thatapicompany/thecatapi';
+// файл index.js 
 import axios from 'axios';
-new TheCatAPI(
-  'live_s8nipvOVu9x7M1Oib237fV73mUqJ5mMbosZrl0Spq6nATwMKfjepogDKSlr2wzo8'
-);
-axios.defaults.headers.common['x-api-key'] =
-  'live_s8nipvOVu9x7M1Oib237fV73mUqJ5mMbosZrl0Spq6nATwMKfjepogDKSlr2wzo8';
 
-const selectEl = document.querySelector('.breed-select');
-const loadingEl = document.querySelector('.loader');
-const errorEl = document.querySelector('.error');
-const catInfoEl = document.querySelector('.cat-info');
-loadingEl.style.display = 'block';
-fetchBreeds(selectEl, loadingEl, errorEl);
-selectEl.addEventListener('change', handleSelectChange);
+const API_KEY = 'live_s8nipvOVu9x7M1Oib237fV73mUqJ5mMbosZrl0Spq6nATwMKfjepogDKSlr2wzo8';
+
+axios.defaults.headers.common['x-api-key'] = API_KEY;
+
+import { fetchBreeds, fetchCatByBreedId } from './cat-api.js';
+
+const selectElement = document.querySelector('.breed-select');
+const loaderElement = document.querySelector('.loader');  
+const errorElement = document.querySelector('.error');
+const catInfoElement = document.querySelector('.cat-info');
+
+loaderElement.style.display = 'block';
+
+fetchBreeds(selectElement, loaderElement, errorElement);
+
+selectElement.addEventListener('change', handleSelectChange);  
+
 async function handleSelectChange() {
-  const selectedBreedId = selectEl.value;
-  catInfoEl.style.display = 'none';
-  loadingEl.style.display = 'block';
-  const catData = await fetchCatByBreed(selectedBreedId, loadingEl, selectEl, errorEl);
-  createMarkup(catData);
-  loadingEl.style.display = 'none';
-  catInfoEl.style.display = 'flex';
+
+  loaderElement.style.display = 'block';
+
+  try {
+
+    const breedId = selectElement.value;
+    const catData = await fetchCatByBreedId(breedId);
+    
+    renderCat(catData);
+
+  } catch (error) {
+
+    errorElement.style.display = 'block';
+    console.error(error);
+
+  } finally {
+
+    loaderElement.style.display = 'none'; 
+    catInfoElement.style.display = 'flex';
+  
+  }
+
 }
-function createMarkup({ name, description, temperament, imageUrl }) {
+
+function renderCat(cat) {
+
+  const { name, description, temperament, imageUrl } = cat;
+
   const markup = `
-    <img class="cat-img" style="object-fit: cover; border-radius: 4px" src="${imageUrl}" alt="${name}" width="500" height="400">
-    <div class="descr-box" style="width: 800px">
+    <img src="${imageUrl}" width="500" height="400">
+    <div>
       <h2>${name}</h2>
       <p>${description}</p>
-      <h3>Temperament:</h3>
-      <p>${temperament}</p> 
+      <h4>Temperament:</h4> 
+      <p>${temperament}</p>
     </div>
   `;
-  catInfoEl.innerHTML = markup;
+
+  catInfo.innerHTML = markup;
 
 }

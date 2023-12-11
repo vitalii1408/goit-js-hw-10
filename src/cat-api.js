@@ -1,46 +1,60 @@
+// файл cat-api.js
+
 import axios from 'axios';
+import { fetchBreeds, fetchCatByBreedId } from './cat-api.js';
+
+axios.defaults.headers.common['x-api-key'] = 'LIVE_API_KEY';
+
+const selectElement = document.querySelector('.breed-select'); 
+const loaderElement = document.querySelector('.loader');
 import Notiflix from 'notiflix';
-import SlimSelect from 'slim-select'
-import '/node_modules/slim-select/dist/slimselect.css';
-export async function fetchBreeds(selectEl, loadingEl, errorEl) {
+
+export async function fetchBreeds(selectElement, loaderElement, errorElement) {
+
   try {
     const response = await axios.get('https://api.thecatapi.com/v1/breeds');
-    loadingEl.style.display = 'none';
-    response.data.forEach(elem => {
-      const optionEl = document.createElement('option');
-      optionEl.value = elem.id;
-      optionEl.textContent = elem.name;
-      selectEl.append(optionEl);
+
+    response.data.forEach(breed => {
+      const option = document.createElement('option');
+      option.value = breed.id; 
+      option.textContent = breed.name;
+      selectElement.appendChild(option);
     });
-    new SlimSelect({
-      select: '#selectElement'
-    })
+
   } catch (error) {
-    loadingEl.style.display = 'none';
-    selectEl.style.display = 'none';
-    errorEl.style.display = 'block';
-    Notiflix.Notify.failure('Oops! Something went wrong! Try reloading the page!');
-    throw new Error(error);
+    
+    loaderElement.style.display = 'none';
+    selectElement.style.display = 'none';
+    errorElement.style.display = 'block';
+
+    Notiflix.Notify.failure('Failed to fetch breeds!');
+    throw error;
+  
   }
+
 }
-export async function fetchCatByBreed(selectedBreedId, loadingEl, selectEl, errorEl) {
+
+export async function fetchCatByBreedId(breedId) {
+
   try {
+
     const response = await axios.get(
-      `https://api.thecatapi.com/v1/images/search?breed_ids=${selectedBreedId}`
+      `https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}`
     );
-    const item = response.data[0];
-    const breedData = item.breeds[0];
-    return {
-      name: breedData.name,
-      description: breedData.description,
-      temperament: breedData.temperament,
-      imageUrl: item.url,
+
+    if(!response.data.length) {
+      throw new Error('Response data is empty');
     }
+
+    const { name, temperament, description } = response.data[0].breeds[0];  
+    const imageUrl = response.data[0].url;
+
+    return { name, temperament, description, imageUrl };
+
   } catch (error) {
-    loadingEl.style.display = 'none';
-    selectEl.style.display = 'none';
-    errorEl.style.display = 'block'; 
-    Notiflix.Notify.failure('Oops! Something went wrong! Try reloading the page!');
-    throw new Error(error);
+
+    throw error;
+
   }
+
 }
